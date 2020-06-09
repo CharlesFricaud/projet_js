@@ -5,9 +5,14 @@ var recherche_courante;
 // Tableau d'objets de type resultats (avec titre, date et url)
 var recherche_courante_news = [];
 
+saisie = document.getElementById("zone_saisie");
+
 
 function ajouter_recherche() {
-	//TODO ...
+  if(!recherches.indexOf("saisie")){
+  	recherches.appendChild(saisie);
+    console.log(recherches),
+  }
 }
 
 
@@ -44,4 +49,3 @@ function sauver_nouvelle(elt) {
 function supprimer_nouvelle(elt) {
 	//TODO ...
 }
-
