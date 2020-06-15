@@ -109,6 +109,7 @@ function rechercher_nouvelles() {
         }
       }
   };
+  recherche_courante = saisie.value;
   xhr.open("GET","https://cavi.alwaysdata.net/search-internships.php?data="+recherche_courante,true);
   xhr.responseType = "json";
   xhr.send();
