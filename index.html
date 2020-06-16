@@ -18,18 +18,19 @@
 
 		<h3 class="titre">nouvelle recherche</h3>
 		<div id="nouvelle-recherche">
-			<input type="text" name="zone_saisie" id="zone_saisie"/>
-			<img class="icone-disk" src="img/disk30.jpg" onclick="ajouter_recherche()" />
+			<input type="text" name="zone_saisie" id="zone_saisie"
+				onkeydown = "if (event.keyCode == 13) document.getElementById('OK').click()"  />
+			<img class="icone-disk" src="img/disk30.jpg" onclick="ajouter_recherche()"/>
 			<BR/>
-			<input type="button" value="OK" onclick="rechercher_nouvelles()"/>
+			<input type="button" id ="OK" value="OK" onclick="rechercher_nouvelles()"/>
 		</div>
 	</div>
 
 	<div id="zone-centrale">
 		<div id="resultats-container">
-			<h3 class="titre">résultats</h3>
+			<h3 class="titre" id="result">résultats</h3>
 			<div id="wait"></div>
-			<div id="resultats"></div>
+			<div id="sortable"></div>
 		</div>
 	</div>
 
@@ -42,6 +43,49 @@
 
 	<script src="scripts/util.js"></script>
 	<script src="scripts/news.js"></script>
+<!--	<script src="scripts/model.js"></script>
+	<script src="scripts/view.js"></script>
+	<script src="scripts/controler.js"></script>-->
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+	<script>
+  $( function() {
+    var availableSearch = [
+      "Marseille",
+      "Paris",
+      "Lyon",
+      "Montpellier",
+      "Stage",
+      "Emploi",
+      "Thèse",
+      "Grenoble",
+      "JavaScript",
+      "Php",
+      "Css",
+      "C++",
+			"Bordeaux",
+			"Valence",
+			"Hardis",
+			"Sopra Steria",
+			"Atos",
+			"Rennes",
+			"Metz",
+			"Strasbourg",
+    ];
+    $( "#zone_saisie" ).autocomplete({
+      source: availableSearch
+    });
+  } );
+  </script>
+
+	<script>
+  $( function() {
+    $( "#sortable" ).sortable();
+    $( "#sortable" ).disableSelection();
+  } );
+  </script>
 
 </body>
 </html>

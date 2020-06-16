@@ -1,86 +1,20 @@
 var controler = {};
 var saisie=view.get_zone_saisie();
 
-function indexOfResultat(t, o){
-	try {
-    var limit = t.length;
-  } catch (e) {
-    var limit = 0;
+class Annonce{
+  constructor(titre, date, url){
+    this.titre = titre;
+    this.date = date;
+    this.url = url;
   }
-	var trouve = false;
-	var i = 0;
-	while( (!trouve) && (i<limit) ){
-		var c = t[i];
-		if ((c.titre == o.titre) && (c.date == o.date)){
-			trouve = true;
-		}
-		i++;
-	}
-	if (trouve) { return (i-1); }
-	else { return -1; }
 }
 
-controler.selectionner_recherche = function selectionner_recherche(elt) {
-  model.recherche_courante_news = [];
-  resultats.innerHTML="";
-  wait.style.display="block";
-  var parent = elt.parentNode;
-  var content = parent.innerText;
-  saisie.value=content;
-
-  model.recherche_courante = saisie.value;
-  if(model.recherche_courante in localStorage){
-    model.recherche_courante_news =  JSON.parse(localStorage.getItem(model.recherche_courante));
-    for (var i = 0; i < recherche_courante_news.length; i++) {
-      resultats.innerHTML+=('<p class="titre_result"><a class="titre_news" href='+model.recherche_courante_news[i].url+'target="_blank">'+model.recherche_courante_news[i].titre+'</a><span class="date_news">'+recherche_courante_news[i].date+'</span><span class="action_news" onclick="controler.supprimer_nouvelle(this)"><img src="img/disk15.jpg"/></span></p>');
-    }
-  }
-  else{
-    console.log("aucune annonce sauvegardée pour cette recherche");
-  }
-  wait.style.display="none";
-}
-
-
-controler.rechercher_nouvelles = function rechercher_nouvelles() {
-	resultats.innerHTML="";
-  wait.style.display="block";
-  var xhr = new XMLHttpRequest();
-
-  xhr.onreadystatechange = function() {
-      if(this.readyState == 4 && this.status == 200){
-        var data = this.response;
-        for (var i = 0; i < data.length; i++) {
-          resultats.innerHTML+=('<p class="titre_result"><a class="titre_news" href='+data[i].url+'target="_blank">'+data[i].titre+'</a><span class="date_news">'+data[i].date+'</span><span class="action_news" onclick="controler.sauver_nouvelle(this)"><img src="img/horloge15.jpg"/></span></p>');
-        }
-      }
-  };
-  xhr.open("GET","https://cavi.alwaysdata.net/search-internships.php?data="+model.recherche_courante,true);
-  xhr.responseType = "json";
-  xhr.send();
-  wait.style.display="none";
-}
-
-controler.sauver_nouvelle = function sauver_nouvelle(elt) {
-  model.sauver_nouvelle(elt);
-}
-
-controler.supprimer_recherche = function supprimer_recherche(elt) {
-  var parent = elt.parentNode;
-  var id = model.recherches.indexOf(parent.innerText);
-  recherches.splice(id,1);
-  var suparent = parent.parentNode;
-  suparent.removeChild(parent);
-  localStorage.setItem("recherches",recherches);
-  localStorage.removeItem(parent.innerText);
-}
-
-
-controler.ajouter_recherche = function ajouter_recherche() {
-  if(recherches.indexOf(saisie.value) < 0){
-  	  model.ajouter_recherche(saisie.value);
-      recherches_S.innerHTML+=('<p class="titre-recherche"><label onclick="controler.selectionner_recherche(this)">'+saisie.value+'</label><img src="img/croix30.jpg" onclick="controler.supprimer_recherche(this)" class="icone-croix"/></p>');
-      localStorage.setItem("recherches",recherches);
+controler.ajouter_recherche = function () {
+  var recherche = view.get_zone_saisie();
+  if(model.recherches.indexOf(recherche) < 0){
+      model.ajouter_recherche(recherche.value);
+      view.set_Recherches_S(recherche.value);
+      model.set_Local_Storage_Recherches();
   }
   else
   {
@@ -88,12 +22,114 @@ controler.ajouter_recherche = function ajouter_recherche() {
   }
 }
 
-controler.supprimer_recherche = function supprimer_recherche(elt) {
+controler.supprimer_recherche = function(elt) {
   var parent = elt.parentNode;
-  var id = recherches.indexOf(parent.innerText);
-  recherches.splice(id,1);
+  var id = model.recherches.indexOf(parent.innerText);
+  model.recherches_Splice(id);
   var suparent = parent.parentNode;
   suparent.removeChild(parent);
-  localStorage.setItem("recherches",recherches);
-  localStorage.removeItem(parent.innerText);
+  model.set_Local_Storage_Recherches();
+  model.remove_Local_Storage(parent.innerText);
+}
+
+
+controler.selectionner_recherche = function(elt) {
+  model.blank_recherche_courante_news(); recherche_courante_news = [];
+  view.blank_resultats();
+  view.set_wait();
+  var parent = elt.parentNode;
+  var content = parent.innerText;
+  view.set_zone_saisie(content);
+  model.set_recherche_courante(view.get_zone_saisie.value);
+
+  if(model.get_recherche_courante() in localStorage){
+    model.set_recherche_courante_news(model.get_recherche_courante());
+    for (var i = 0; i < model.get_recherche_courante_news().length; i++) {
+      view.set_resultats(model.get_recherche_courante_news_id(i));
+      view.set_titreR(Number(i+1));
+    }
+  }
+  else{
+    console.log("aucune annonce sauvegardée pour cette recherche");
+  }
+  view.unset_wait();
+}
+
+
+controler.init = function () {
+  if(model.get_local_Storage_recherches())
+  {
+    var stockage = model.get_local_Storage_recherches();
+    stockage = stockage.split(",");
+    for (var i = 0; i < stockage.length; i++) {
+      model.ajouter_recherche(stockage[i]);
+      view.set_Recherches_S(stockage[i]);
+    }
+  }
+}
+
+
+controler.rechercher_nouvelles = function() {
+	view.blank_resultats();
+  view.set_wait();
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function() {
+      if(this.readyState == 4 && this.status == 200){
+        var data = this.response;
+        for (var i = 0; i < data.length; i++) {
+          console.log(data[i]);
+          view.set_resultats_r(data[i]);
+          view.set_titreR(Number(i+1));
+        }
+      }
+  }
+
+  model.set_recherche_courante(view.get_zone_saisie().value);
+  var rc = model.get_recherche_courante();
+  xhr.open("GET","https://cavi.alwaysdata.net/search-internships.php?data="+rc,true);
+  xhr.responseType = "json";
+  xhr.send();
+  view.unset_wait();
+}
+
+
+controler.sauver_nouvelle = function (elt){
+  var image = elt.lastChild;
+  var parent = elt.parentNode;
+  view.setAttribute_image(image,'src','img/disk15.jpg');
+  view.setAttribut_parent(elt,'onclick',"controler.supprimer_nouvelle(this)");
+  var annonce = new Annonce(view.get_titre_annonce(parent),view.get_date_annonce(parent), view.get_url_annonce(parent));
+
+  if(model.indexOfResultat(model.get_recherche_courante_news(), annonce) == -1){
+    if(model.get_recherche_courante() in localStorage){
+      model.set_recherche_courante_news(JSON.parse(localStorage.getItem(model.get_recherche_courante())));
+      model.add_recherches_courantes_news(annonce);
+      model.set_Local_Storage(model.recherche_courante,JSON.stringify(model.recherche_courante_news));
+    }
+    else {
+      model.blank_recherche_courante_news();
+      model.add_recherches_courantes_news(annonce);
+      model.set_Local_Storage(model.recherche_courante,JSON.stringify(model.recherche_courante_news));
+    }
+  }
+  else
+  {
+  	  console.log("already saved");
+  }
+}
+
+controler.supprimer_nouvelle = function(elt) {
+  var image = elt.lastChild;
+  var parent = elt.parentNode;
+  view.setAttribute_image(image,'src','img/horloge15.jpg');
+  view.setAttribut_parent('onclick',"controler.sauver_nouvelle(this)");
+
+  var annonce = new Annonce(view.get_titre_annonce(parent),view.get_date_annonce(parent), view.get_url_annonce(parent));
+
+  try {
+    model.recherches_courante_news_Splice(model.indexOfResultat(model.get_recherche_courante_news(), annonce));
+      model.set_Local_Storage(recherche_courante,JSON.stringify(recherche_courante_news));
+  } catch (e) {
+      console.log("problème suppr_nouvelle");
+  }
 }

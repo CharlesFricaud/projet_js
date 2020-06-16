@@ -7,8 +7,9 @@ var recherche_courante_news = [];
 
 saisie = document.getElementById("zone_saisie");
 recherches_S = document.getElementById("recherches-stockees");
-resultats = document.getElementById("resultats");
+resultats = document.getElementById("sortable");
 wait = document.getElementById("wait");
+titreR = document.getElementById("result");
 
 /**
  * Fonction utilitaire qui cherche si l'objet résultat (o) est bien
@@ -74,6 +75,7 @@ function selectionner_recherche(elt) {
     recherche_courante_news =  JSON.parse(localStorage.getItem(recherche_courante));
     for (var i = 0; i < recherche_courante_news.length; i++) {
       resultats.innerHTML+=('<p class="titre_result"><a class="titre_news" href='+recherche_courante_news[i].url+'target="_blank">'+recherche_courante_news[i].titre+'</a><span class="date_news">'+recherche_courante_news[i].date+'</span><span class="action_news" onclick="supprimer_nouvelle(this)"><img src="img/disk15.jpg"/></span></p>');
+      titreR.innerText="résultats  ("+Number(i+1)+")";
     }
   }
   else{
@@ -105,7 +107,8 @@ function rechercher_nouvelles() {
       if(this.readyState == 4 && this.status == 200){
         var data = this.response;
         for (var i = 0; i < data.length; i++) {
-          resultats.innerHTML+=('<p class="titre_result"><a class="titre_news" href='+data[i].url+'target="_blank">'+data[i].titre+'</a><span class="date_news">'+data[i].date+'</span><span class="action_news" onclick="sauver_nouvelle(this)"><img src="img/horloge15.jpg"/></span></p>');
+          resultats.innerHTML+=('<p class="titre_result ui-widget-content" id="draggable"><a class="titre_news" href='+data[i].url+'target="_blank">'+data[i].titre+'</a><span class="date_news">'+data[i].date+'</span><span class="action_news" onclick="sauver_nouvelle(this)"><img src="img/horloge15.jpg"/></span></p>');
+          titreR.innerText="résultats  ("+Number(i+1)+")";
         }
       }
   };
@@ -138,8 +141,16 @@ function sauver_nouvelle(elt) {
   var annonce = new Annonce(titre, date, url);
 
   if(indexOfResultat(recherche_courante_news, annonce) == -1){
-  	  recherche_courante_news.push(annonce);
+    if(recherche_courante in localStorage){
+      recherche_courante_news =  JSON.parse(localStorage.getItem(recherche_courante));
+      recherche_courante_news.push(annonce);
       localStorage.setItem(recherche_courante,JSON.stringify(recherche_courante_news));
+    }
+    else {
+        recherche_courante_news = [];
+        recherche_courante_news.push(annonce);
+        localStorage.setItem(recherche_courante,JSON.stringify(recherche_courante_news));
+    }
   }
   else
   {
